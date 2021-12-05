@@ -37,6 +37,7 @@ class PostController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($post);
+            $this->addFlash('success', 'Post was created');
             $entityManager->flush();
 
             return $this->redirectToRoute('post_index', [], Response::HTTP_SEE_OTHER);
@@ -68,6 +69,7 @@ class PostController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+            $this->addFlash('success', 'Post was modified');
 
             return $this->redirectToRoute('post_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -85,6 +87,7 @@ class PostController extends AbstractController
     {
         if ($this->isCsrfTokenValid('delete'.$post->getId(), $request->request->get('_token'))) {
             $entityManager->remove($post);
+            $this->addFlash('success', 'Post was removed');
             $entityManager->flush();
         }
 

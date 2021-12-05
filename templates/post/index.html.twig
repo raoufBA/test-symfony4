@@ -3,8 +3,10 @@
 {% block title %}Post index{% endblock %}
 
 {% block body %}
+    {% for message in app.flashes('success') %}
+    <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
     <h1>Post index</h1>
-
     <table class="table table-striped">
         <thead>
             <tr>
@@ -19,8 +21,8 @@
                 <td><a href="{{ path('post_show', {'id': post.id }) }}">{{ post.title }}</a></td>
                 <td>{{ post.description }}</td>
                 <td>
-                    <a href="{{ path('post_edit', {'id': post.id}) }}">edit</a>
-                    <a href="{{ path('post_delete', {'id': post.id}) }}">delete</a>
+                    <a class="btn btn-primary" href="{{ path('post_edit', {'id': post.id}) }}">edit</a>
+                    <a class="btn btn-danger" href="{{ path('post_delete', {'id': post.id}) }}">delete</a>
                 </td>
             </tr>
         {% else %}
@@ -31,5 +33,5 @@
         </tbody>
     </table>
 
-    <a href="{{ path('post_new') }}">Create new</a>
+    <a class="btn btn-success " href="{{ path('post_new') }}">Create new</a>
 {% endblock %}

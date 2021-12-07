@@ -10,6 +10,11 @@
     {# Run `composer require symfony/webpack-encore-bundle`
            and uncomment the following Encore helpers to start using Symfony UX #}
     {% block stylesheets %}
+        <style>
+            .row {
+                margin-top: 5px;
+            }
+        </style>
         {# {{ encore_entry_link_tags('app') }} #}
     {% endblock %}
 
@@ -22,14 +27,14 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ path('post_index') }}">Symfony4</a>
+        <a class="navbar-brand" href="{{ path('post_index') }}">Home</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    <a class="nav-link active" aria-current="page" href="{{ path('category_index') }}">Category</a>
                 </li>
                 {% if is_granted('ROLE_USER') %}
                 <li class="nav-item">

@@ -7,21 +7,23 @@
 
     <table class="table">
         <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ post.id }}</td>
-            </tr>
-            <tr>
-                <th>Title</th>
-                <td>{{ post.title }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ post.description }}</td>
-            </tr>
         <tr>
-            <img src="{{'/uploads/attachements/' ~ post.image }}" alt="{{ post.title }}">
+            <th>Id</th>
+            <td>{{ post.id }}</td>
         </tr>
+        <tr>
+            <th>Title</th>
+            <td>{{ post.title }}</td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>{{ post.description }}</td>
+        </tr>
+        {% if post.image %}
+            <tr>
+                <img height="300px" width="300px" src="{{ '/uploads/' ~ post.image }}" alt="{{ post.title }}">
+            </tr>
+        {% endif %}
 
         </tbody>
     </table>

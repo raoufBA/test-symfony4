@@ -7,6 +7,8 @@ use App\Form\PostType;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -36,6 +38,26 @@ class PostController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            //get Filte upload
+            /** @var  UploadedFile $file */
+            $file = $request->files->get('post')['attachment'];
+            if ($file) {
+
+                $newFilename = uniqid() . '.' . $file->getClientOriginalExtension();
+                $dirDest = $this->getParameter('file_upload_directory');
+                try {
+                    $file->move(
+                        $dirDest,
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    dd($e);
+                }
+
+                $post->setImage($newFilename);
+            }
+
             $entityManager->persist($post);
             $this->addFlash('success', 'Post was created');
             $entityManager->flush();
@@ -68,6 +90,30 @@ class PostController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+
+            $file = $request->files->get('post')['attachment'];
+            if ($file) {
+
+                $newFilename = uniqid() . '.' . $file->getClientOriginalExtension();
+                $dirDest = $this->getParameter('file_upload_directory');
+                try {
+                    $file->move(
+                        $dirDest,
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    dd($e);
+                }
+               //delete old image
+                if ($post->getImage()) {
+                    unlink($dirDest . $post->getImage());
+                }
+
+                $post->setImage($newFilename);
+            }
+
+
             $entityManager->flush();
             $this->addFlash('success', 'Post was modified');
 
@@ -85,10 +131,19 @@ class PostController extends AbstractController
      */
     public function delete(Request $request, Post $post, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$post->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $post->getId(), $request->request->get('_token'))) {
+
             $entityManager->remove($post);
-            $this->addFlash('success', 'Post was removed');
             $entityManager->flush();
+
+            //delete old image
+            if ($post->getImage()) {
+                $dirDest = $this->getParameter('file_upload_directory');
+                unlink($dirDest . $post->getImage());
+            }
+
+            $this->addFlash('success', 'Post was removed');
+
         }
 
         return $this->redirectToRoute('post_index', [], Response::HTTP_SEE_OTHER);

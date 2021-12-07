@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Post;
 use App\Form\PostType;
 use App\Repository\PostRepository;
+use App\services\FileUpload;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -31,7 +32,7 @@ class PostController extends AbstractController
     /**
      * @Route("/new", name="new", methods={"GET", "POST"})
      */
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, FileUpload $fileUpload): Response
     {
         $post = new Post();
         $form = $this->createForm(PostType::class, $post);
@@ -43,18 +44,7 @@ class PostController extends AbstractController
             /** @var  UploadedFile $file */
             $file = $request->files->get('post')['attachment'];
             if ($file) {
-
-                $newFilename = uniqid() . '.' . $file->getClientOriginalExtension();
-                $dirDest = $this->getParameter('file_upload_directory');
-                try {
-                    $file->move(
-                        $dirDest,
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    dd($e);
-                }
-
+                $newFilename = $fileUpload->uploadFile($file);
                 $post->setImage($newFilename);
             }
 
@@ -84,7 +74,7 @@ class PostController extends AbstractController
     /**
      * @Route("/{id}/edit", name="edit", methods={"GET", "POST"})
      */
-    public function edit(Request $request, Post $post, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Post $post, EntityManagerInterface $entityManager, FileUpload $fileUpload): Response
     {
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
@@ -95,19 +85,11 @@ class PostController extends AbstractController
             $file = $request->files->get('post')['attachment'];
             if ($file) {
 
-                $newFilename = uniqid() . '.' . $file->getClientOriginalExtension();
-                $dirDest = $this->getParameter('file_upload_directory');
-                try {
-                    $file->move(
-                        $dirDest,
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    dd($e);
-                }
-               //delete old image
+                $newFilename = $fileUpload->uploadFile( $file);
+
+                //delete old image
                 if ($post->getImage()) {
-                    unlink($dirDest . $post->getImage());
+                    $fileUpload->deleteFile($post->getImage());
                 }
 
                 $post->setImage($newFilename);
@@ -129,7 +111,7 @@ class PostController extends AbstractController
     /**
      * @Route("/{id}", name="delete", methods={"POST"})
      */
-    public function delete(Request $request, Post $post, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Post $post, EntityManagerInterface $entityManager, FileUpload $fileUpload): Response
     {
         if ($this->isCsrfTokenValid('delete' . $post->getId(), $request->request->get('_token'))) {
 
@@ -138,8 +120,7 @@ class PostController extends AbstractController
 
             //delete old image
             if ($post->getImage()) {
-                $dirDest = $this->getParameter('file_upload_directory');
-                unlink($dirDest . $post->getImage());
+                $fileUpload->deleteFile($post->getImage());
             }
 
             $this->addFlash('success', 'Post was removed');
